@@ -24,6 +24,7 @@
             </div>
             <p class="text-sm text-gray-500 mt-1">{{ $layup->description ?? 'No description provided.' }}</p>
         </div>
+        @if (auth()->user()->canManage())
         <div class="flex gap-2">
             <a href="{{ route('layups.edit', $layup) }}" class="px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">Edit</a>
             <form method="POST" action="{{ route('layups.destroy', $layup) }}" onsubmit="return confirm('Delete layup?')">
@@ -31,6 +32,7 @@
                 <button class="px-3 py-2 bg-white border border-red-300 text-red-700 text-sm font-medium rounded-md hover:bg-red-50">Delete</button>
             </form>
         </div>
+        @endif
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-gray-100">

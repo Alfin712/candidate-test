@@ -49,10 +49,23 @@
                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
                         </svg>
                     </button>
-                    <div x-show="profile" x-cloak x-transition class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-20">
+                    <div x-show="profile" x-cloak x-transition class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-20">
                         <div class="px-4 py-2 border-b border-gray-100">
-                            <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
-                            <div class="text-xs text-gray-500">{{ $user->email }}</div>
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
+                                @php
+                                    $roleColors = [
+                                        'admin'  => 'bg-rose-100 text-rose-700',
+                                        'staff'  => 'bg-emerald-100 text-emerald-700',
+                                        'viewer' => 'bg-gray-100 text-gray-700',
+                                    ];
+                                    $roleClass = $roleColors[$user->role] ?? 'bg-gray-100 text-gray-700';
+                                @endphp
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide {{ $roleClass }}">
+                                    {{ $user->role }}
+                                </span>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">{{ $user->email }}</div>
                         </div>
                         <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
                         <form method="POST" action="{{ route('logout') }}">

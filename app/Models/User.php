@@ -25,17 +25,38 @@ class User extends Authenticatable
     ];
 
     public const ROLE_ADMIN = 'admin';
-    public const ROLE_ENGINEER = 'engineer';
+    public const ROLE_STAFF = 'staff';
     public const ROLE_VIEWER = 'viewer';
+    // Legacy alias retained for backwards compatibility with older tests/fixtures.
+    public const ROLE_ENGINEER = 'engineer';
 
     public static function roles(): array
     {
-        return [self::ROLE_ADMIN, self::ROLE_ENGINEER, self::ROLE_VIEWER];
+        return [self::ROLE_ADMIN, self::ROLE_STAFF, self::ROLE_VIEWER];
     }
 
     public function isAdmin(): bool
     {
         return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function isStaff(): bool
+    {
+        // Treat legacy 'engineer' as staff for backwards compatibility.
+        return in_array($this->role, [self::ROLE_STAFF, self::ROLE_ENGINEER], true);
+    }
+
+    public function isViewer(): bool
+    {
+        return $this->role === self::ROLE_VIEWER;
+    }
+
+    /**
+     * Whether the user can mutate domain data (create/edit/delete suppliers & layups).
+     */
+    public function canManage(): bool
+    {
+        return $this->isAdmin() || $this->isStaff();
     }
 
     public function initials(): string

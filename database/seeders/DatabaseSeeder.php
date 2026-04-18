@@ -17,15 +17,17 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Test User',
                 'password' => Hash::make('password'),
                 'role' => User::ROLE_ADMIN,
+                'email_verified_at' => now(),
             ],
         );
 
         User::updateOrCreate(
-            ['email' => 'engineer@example.com'],
+            ['email' => 'staff@example.com'],
             [
-                'name' => 'Engineer User',
+                'name' => 'Staff User',
                 'password' => Hash::make('password'),
-                'role' => User::ROLE_ENGINEER,
+                'role' => User::ROLE_STAFF,
+                'email_verified_at' => now(),
             ],
         );
 
@@ -35,6 +37,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Viewer User',
                 'password' => Hash::make('password'),
                 'role' => User::ROLE_VIEWER,
+                'email_verified_at' => now(),
             ],
         );
 

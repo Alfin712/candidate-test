@@ -49,7 +49,12 @@
                         </td>
                         <td class="px-5 py-3 text-gray-600">{{ $u->email }}</td>
                         <td class="px-5 py-3">
-                            @php $roleClass = ['admin' => 'bg-rose-100 text-rose-700', 'engineer' => 'bg-indigo-100 text-indigo-700', 'viewer' => 'bg-gray-100 text-gray-700'][$u->role] ?? 'bg-gray-100 text-gray-700'; @endphp
+                            @php $roleClass = [
+                                'admin'    => 'bg-rose-100 text-rose-700',
+                                'staff'    => 'bg-emerald-100 text-emerald-700',
+                                'engineer' => 'bg-indigo-100 text-indigo-700',
+                                'viewer'   => 'bg-gray-100 text-gray-700',
+                            ][$u->role] ?? 'bg-gray-100 text-gray-700'; @endphp
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $roleClass }}">{{ ucfirst($u->role) }}</span>
                         </td>
                         <td class="px-5 py-3 text-gray-600">{{ $u->created_at?->format('M d, Y') }}</td>

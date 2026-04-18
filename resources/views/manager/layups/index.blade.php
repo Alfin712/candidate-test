@@ -7,10 +7,12 @@
         <h1 class="text-2xl font-semibold text-gray-900">Layup Specifications</h1>
         <p class="text-sm text-gray-500 mt-1">Browse every layup across the network.</p>
     </div>
+    @if (auth()->user()->canManage())
     <a href="{{ route('layups.create') }}" class="inline-flex items-center gap-2 px-3 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md hover:bg-emerald-700">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
         New Layup
     </a>
+    @endif
 </div>
 
 <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -60,11 +62,13 @@
                         <td class="px-5 py-3">@include('manager.partials.status-badge', ['status' => $layup->status])</td>
                         <td class="px-5 py-3 text-right">
                             <a href="{{ route('layups.show', $layup) }}" class="text-xs text-gray-600 hover:text-emerald-700 px-2 py-1">View</a>
+                            @if (auth()->user()->canManage())
                             <a href="{{ route('layups.edit', $layup) }}" class="text-xs text-gray-600 hover:text-emerald-700 px-2 py-1">Edit</a>
                             <form method="POST" action="{{ route('layups.destroy', $layup) }}" class="inline" onsubmit="return confirm('Delete layup?')">
                                 @csrf @method('DELETE')
                                 <button class="text-xs text-red-600 hover:text-red-800 px-2 py-1">Delete</button>
                             </form>
+                            @endif
                         </td>
                     </tr>
                 @empty

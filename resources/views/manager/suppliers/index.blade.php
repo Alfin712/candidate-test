@@ -8,10 +8,12 @@
         <p class="text-sm text-gray-500 mt-1">Manage your CLT supplier network.</p>
     </div>
     <div class="flex gap-2">
+        @if (auth()->user()->canManage())
         <a href="{{ route('suppliers.create') }}" class="inline-flex items-center gap-2 px-3 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md hover:bg-emerald-700">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             New Supplier
         </a>
+        @endif
     </div>
 </div>
 
@@ -72,11 +74,13 @@
                         <td class="px-5 py-3 text-right">
                             <div class="inline-flex gap-1" x-data="{ open: false }">
                                 <a href="{{ route('suppliers.show', $supplier) }}" class="text-xs text-gray-600 hover:text-emerald-700 px-2 py-1 rounded hover:bg-gray-100">Detail</a>
+                                @if (auth()->user()->canManage())
                                 <a href="{{ route('suppliers.edit', $supplier) }}" class="text-xs text-gray-600 hover:text-emerald-700 px-2 py-1 rounded hover:bg-gray-100">Edit</a>
                                 <form method="POST" action="{{ route('suppliers.destroy', $supplier) }}" onsubmit="return confirm('Delete supplier {{ $supplier->name }}?')">
                                     @csrf @method('DELETE')
                                     <button class="text-xs text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50">Delete</button>
                                 </form>
+                                @endif
                             </div>
                         </td>
                     </tr>
