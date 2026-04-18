@@ -8,4 +8,13 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    build: {
+        rollupOptions: {
+            output: {
+                entryFileNames: 'assets/bundle-[hash].js',
+                chunkFileNames: 'assets/chunk-[hash].js',
+                assetFileNames: 'assets/style-[hash][extname]',
+            },
+        },
+    },
 });

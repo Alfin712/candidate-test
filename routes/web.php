@@ -5,11 +5,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect('/ui');
-});
+})->middleware('auth');
 
 Route::get('/ui', function () {
     return view('ui.suppliers');
-})->name('ui.suppliers');
+})->middleware('auth')->name('ui.suppliers');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
