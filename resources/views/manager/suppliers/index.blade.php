@@ -25,7 +25,7 @@
                 <input type="text" name="q" value="{{ $search }}" placeholder="Search suppliers..."
                        class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-emerald-500 focus:border-emerald-500">
             </div>
-            <select name="status" class="border border-gray-300 rounded-md text-sm px-3 py-2">
+            <select name="status" class="border border-gray-300 rounded-md text-sm pl-3 pr-8 py-2 bg-white focus:ring-emerald-500 focus:border-emerald-500">
                 <option value="">All Status</option>
                 <option value="Active" @selected($status === 'Active')>Active</option>
                 <option value="Inactive" @selected($status === 'Inactive')>Inactive</option>
