@@ -19,6 +19,7 @@ use App\Repositories\SupplierRepository;
 use App\Services\SupplierExportService;
 use App\Services\SupplierImportService;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -37,6 +38,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
+
         Gate::policy(Supplier::class, SupplierPolicy::class);
         Gate::policy(Layup::class, LayupPolicy::class);
         Gate::policy(Layer::class, LayerPolicy::class);
