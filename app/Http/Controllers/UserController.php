@@ -40,7 +40,7 @@ class UserController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
             'role' => ['required', Rule::in(User::roles())],
         ]);
 
@@ -60,9 +60,19 @@ class UserController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'password' => ['nullable', 'confirmed', Password::min(8)],
+            'password' => ['nullable', 'confirmed', Password::min(8)->mixedCase()->numbers()],
             'role' => ['required', Rule::in(User::roles())],
         ]);
+
+        // Guard: never demote the last remaining admin (including self).
+        if ($user->isAdmin() && $data['role'] !== User::ROLE_ADMIN) {
+            $adminCount = User::where('role', User::ROLE_ADMIN)->count();
+            if ($adminCount <= 1) {
+                return back()
+                    ->withInput()
+                    ->withErrors(['role' => 'Cannot demote the last remaining admin.']);
+            }
+        }
 
         if (! empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);
@@ -80,6 +90,15 @@ class UserController extends Controller
         if ($user->id === $request->user()->id) {
             return back()->withErrors(['user' => 'You cannot delete your own account.']);
         }
+
+        // Guard: never delete the last remaining admin.
+        if ($user->isAdmin()) {
+            $adminCount = User::where('role', User::ROLE_ADMIN)->count();
+            if ($adminCount <= 1) {
+                return back()->withErrors(['user' => 'Cannot delete the last remaining admin.']);
+            }
+        }
+
         $user->delete();
         return redirect()->route('users.index')->with('success', 'User deleted.');
     }
