@@ -60,8 +60,17 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-2 bg-white rounded-lg border border-gray-200 shadow-sm">
-        <div class="px-5 py-3 border-b border-gray-100">
+        <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between gap-2">
             <h2 class="font-semibold text-gray-900">Layer Composition</h2>
+            @if (auth()->user()->canManage())
+                <a href="{{ route('layers.create', $layup) }}"
+                   class="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white text-xs font-medium rounded-md hover:bg-emerald-700 min-h-[32px]">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Add Layer
+                </a>
+            @endif
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
@@ -72,6 +81,9 @@
                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Width (mm)</th>
                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Angle (°)</th>
                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Grade</th>
+                        @if (auth()->user()->canManage())
+                            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -87,9 +99,27 @@
                             <td class="px-4 py-2">{{ $layer->width }}</td>
                             <td class="px-4 py-2">{{ $layer->angle }}°</td>
                             <td class="px-4 py-2">{{ $layer->grade ?? '—' }}</td>
+                            @if (auth()->user()->canManage())
+                                <td class="px-4 py-2 text-right whitespace-nowrap">
+                                    <a href="{{ route('layers.edit', $layer) }}"
+                                       class="text-xs text-emerald-700 hover:text-emerald-900 px-2 py-1 rounded hover:bg-emerald-50">Edit</a>
+                                    @include('manager.partials.delete-confirm', [
+                                        'action' => route('layers.destroy', $layer),
+                                        'title' => 'Delete layer',
+                                        'message' => 'Remove layer L'.$layer->layer_order.' from "'.$layup->name.'"? This cannot be undone.',
+                                        'triggerClass' => 'text-xs text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50',
+                                        'triggerLabel' => 'Delete',
+                                    ])
+                                </td>
+                            @endif
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="px-4 py-6 text-center text-gray-500 text-sm">No layers defined.</td></tr>
+                        <tr><td colspan="{{ auth()->user()->canManage() ? 6 : 5 }}" class="px-4 py-6 text-center text-gray-500 text-sm">
+                            No layers defined.
+                            @if (auth()->user()->canManage())
+                                <a href="{{ route('layers.create', $layup) }}" class="text-emerald-700 hover:text-emerald-900 font-medium">Add the first one.</a>
+                            @endif
+                        </td></tr>
                     @endforelse
                 </tbody>
             </table>

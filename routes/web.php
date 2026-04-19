@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LayerController;
 use App\Http\Controllers\LayupController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SupplierController;
@@ -44,6 +45,20 @@ Route::middleware('auth')->group(function () {
             ->whereNumber('layup');
         Route::delete('layups/{layup}', [LayupController::class, 'destroy'])
             ->whereNumber('layup')->name('layups.destroy');
+
+        // Layer CRUD (nested shallow). Literal /create declared before wildcard {layer}.
+        Route::get('layups/{layup}/layers/create', [LayerController::class, 'create'])
+            ->whereNumber('layup')->name('layers.create');
+        Route::post('layups/{layup}/layers', [LayerController::class, 'store'])
+            ->whereNumber('layup')->name('layers.store');
+        Route::get('layers/{layer}/edit', [LayerController::class, 'edit'])
+            ->whereNumber('layer')->name('layers.edit');
+        Route::put('layers/{layer}', [LayerController::class, 'update'])
+            ->whereNumber('layer')->name('layers.update');
+        Route::patch('layers/{layer}', [LayerController::class, 'update'])
+            ->whereNumber('layer');
+        Route::delete('layers/{layer}', [LayerController::class, 'destroy'])
+            ->whereNumber('layer')->name('layers.destroy');
     });
 
     // Read-only wildcard routes: declared AFTER /create so they don't shadow it.
