@@ -139,21 +139,22 @@
     {{-- Import modal --}}
     <div x-show="open" x-cloak
          class="fixed inset-0 z-40 flex items-center justify-center px-4"
-         @keydown.escape.window="open = false">
-        <div class="absolute inset-0 bg-gray-900/50" @click="open = false"></div>
+         @keydown.escape.window="open = false; clearConflicts(); file = null;">
+        <div class="absolute inset-0 bg-gray-900/50" @click="open = false; clearConflicts(); file = null;"></div>
 
-        <div class="relative bg-white w-full max-w-lg rounded-lg shadow-xl border border-gray-200">
+        <div class="relative bg-white w-full rounded-lg shadow-xl border border-gray-200 max-h-[90vh] overflow-y-auto"
+             :class="conflicts.length ? 'max-w-3xl' : 'max-w-lg'">
             <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <div>
                     <h3 class="font-semibold text-gray-900">Import Layup Data</h3>
                     <p class="text-xs text-gray-500 mt-0.5">Upload a CSV or JSON snapshot to merge into {{ $supplier->name }}.</p>
                 </div>
-                <button type="button" @click="open = false" class="text-gray-400 hover:text-gray-600">
+                <button type="button" @click="open = false; clearConflicts(); file = null;" class="text-gray-400 hover:text-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
-            <form @submit.prevent="submitImport" class="px-5 py-4 space-y-4">
+            <form @submit.prevent="conflicts.length ? resubmitWithResolutions() : submitImport()" class="px-5 py-4 space-y-4">
                 {{-- Drag & drop zone --}}
                 <div
                     class="relative border-2 border-dashed rounded-md px-4 py-8 text-center cursor-pointer transition"
@@ -176,16 +177,106 @@
                     <div class="text-xs text-gray-500" x-show="file" x-text="file && (Math.round(file.size / 102.4) / 10) + ' KB'"></div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 uppercase tracking-wide mb-1">Conflict Resolution Strategy</label>
-                    <select x-model="strategy" class="w-full border border-gray-300 rounded-md text-sm px-3 py-2 focus:ring-emerald-500 focus:border-emerald-500">
-                        <option value="skip">Skip conflicts (Default)</option>
-                        <option value="overwrite">Overwrite existing</option>
-                        <option value="merge">Merge fields</option>
+                {{-- Conflict resolution panel --}}
+                <section x-show="conflicts.length" x-cloak
+                         role="region" aria-label="Conflict resolution"
+                         class="border border-amber-300 bg-amber-50/40 rounded-md">
+                    <header class="px-4 py-3 border-b border-amber-200 flex items-center justify-between flex-wrap gap-2">
+                        <div>
+                            <div class="font-semibold text-amber-900 text-sm">
+                                <span x-text="conflicts.length"></span> conflict(s) detected — choose how to resolve each
+                            </div>
+                            <div class="text-xs text-amber-800/80 mt-0.5">Red fields differ between existing and imported data.</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" @click="applyAll('keep_existing')"
+                                class="px-2.5 py-1.5 text-xs font-medium rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
+                                Apply all: Keep Existing
+                            </button>
+                            <button type="button" @click="applyAll('accept_incoming')"
+                                class="px-2.5 py-1.5 text-xs font-medium rounded-md bg-white border border-amber-400 text-amber-800 hover:bg-amber-50">
+                                Apply all: Accept Incoming
+                            </button>
+                        </div>
+                    </header>
+
+                    <ul class="divide-y divide-amber-200">
+                        <template x-for="c in conflicts" :key="c.layup_name + ':' + c.layer_order">
+                            <li class="p-4">
+                                <div class="text-sm font-medium text-gray-900 mb-2">
+                                    <span x-text="c.layup_name"></span>
+                                    <span class="text-gray-500"> — Layer </span>
+                                    <span x-text="c.layer_order"></span>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {{-- Existing --}}
+                                    <div class="rounded-md border border-gray-200 bg-gray-50 p-3">
+                                        <div class="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-2">Existing</div>
+                                        <dl class="text-xs space-y-1">
+                                            <template x-for="field in ['thickness','width','angle','grade']" :key="'ex-'+field">
+                                                <div class="flex justify-between gap-3">
+                                                    <dt class="text-gray-500 capitalize" x-text="field"></dt>
+                                                    <dd class="font-medium"
+                                                        :class="c.existing[field] !== c.incoming[field] ? 'text-red-700' : 'text-gray-900'"
+                                                        x-text="c.existing[field] ?? '—'"></dd>
+                                                </div>
+                                            </template>
+                                        </dl>
+                                    </div>
+                                    {{-- Incoming --}}
+                                    <div class="rounded-md border border-amber-300 bg-amber-50 p-3">
+                                        <div class="text-[10px] font-semibold uppercase tracking-wide text-amber-800 mb-2">Importing</div>
+                                        <dl class="text-xs space-y-1">
+                                            <template x-for="field in ['thickness','width','angle','grade']" :key="'in-'+field">
+                                                <div class="flex justify-between gap-3">
+                                                    <dt class="text-amber-900/70 capitalize" x-text="field"></dt>
+                                                    <dd class="font-medium"
+                                                        :class="c.existing[field] !== c.incoming[field] ? 'text-red-700' : 'text-gray-900'"
+                                                        x-text="c.incoming[field] ?? '—'"></dd>
+                                                </div>
+                                            </template>
+                                        </dl>
+                                    </div>
+                                </div>
+
+                                <fieldset class="mt-3">
+                                    <legend class="sr-only">Resolution for <span x-text="c.layup_name"></span> layer <span x-text="c.layer_order"></span></legend>
+                                    <div class="flex flex-wrap gap-4 text-xs">
+                                        <label class="inline-flex items-center gap-2 cursor-pointer">
+                                            <input type="radio"
+                                                   :name="'res-'+c.layup_name+'-'+c.layer_order"
+                                                   :checked="resolutions[c.layup_name+':'+c.layer_order] === 'keep_existing'"
+                                                   @change="setResolution(c, 'keep_existing')"
+                                                   class="text-emerald-600 focus:ring-emerald-500 border-gray-300">
+                                            <span class="text-gray-800">Keep existing</span>
+                                        </label>
+                                        <label class="inline-flex items-center gap-2 cursor-pointer">
+                                            <input type="radio"
+                                                   :name="'res-'+c.layup_name+'-'+c.layer_order"
+                                                   :checked="resolutions[c.layup_name+':'+c.layer_order] === 'accept_incoming'"
+                                                   @change="setResolution(c, 'accept_incoming')"
+                                                   class="text-amber-600 focus:ring-amber-500 border-gray-300">
+                                            <span class="text-gray-800">Accept incoming</span>
+                                        </label>
+                                    </div>
+                                </fieldset>
+                            </li>
+                        </template>
+                    </ul>
+                </section>
+
+                <div x-show="!conflicts.length">
+                    <label for="strategy-select" class="block text-xs font-medium text-gray-700 uppercase tracking-wide mb-1">Conflict Resolution Strategy</label>
+                    <select id="strategy-select" x-model="strategy" class="w-full border border-gray-300 rounded-md text-sm px-3 py-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="skip">Skip conflicts (keep existing)</option>
+                        <option value="overwrite">Overwrite all (accept incoming)</option>
+                        <option value="reject">Reject import on any conflict</option>
+                        <option value="duplicate">Create duplicate layup with suffix</option>
                     </select>
                 </div>
 
-                <label class="flex items-start gap-2 cursor-pointer">
+                <label class="flex items-start gap-2 cursor-pointer" x-show="!conflicts.length">
                     <input type="checkbox" x-model="dryRun" class="mt-0.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
                     <div>
                         <div class="text-sm font-medium text-gray-900">Run as Dry Run</div>
@@ -193,36 +284,24 @@
                     </div>
                 </label>
 
-                {{-- Conflict alert --}}
-                <div x-show="conflictSummary" x-cloak
-                     class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                    <div class="font-medium">Potential Conflicts Detected</div>
-                    <div class="text-xs mt-0.5">
-                        <span x-text="conflictSummary && conflictSummary.count"></span>
-                        Layups differ from current suppliers.
-                        <button type="button" class="underline ml-1" @click="showConflicts = !showConflicts">View details</button>
-                    </div>
-                    <ul x-show="showConflicts" x-cloak class="mt-2 text-xs list-disc list-inside space-y-0.5">
-                        <template x-for="c in (conflictSummary ? conflictSummary.items : [])" :key="c.layup_name + ':' + c.layer_order">
-                            <li>
-                                <span class="font-medium" x-text="c.layup_name"></span>
-                                — layer <span x-text="c.layer_order"></span>
-                            </li>
-                        </template>
-                    </ul>
-                </div>
-
                 <div x-show="errorMsg" x-cloak class="text-sm text-red-700" x-text="errorMsg"></div>
 
                 <div class="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
-                    <button type="button" @click="open = false"
+                    <template x-if="conflicts.length">
+                        <button type="button" @click="clearConflicts()"
+                                class="px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">
+                            Cancel resolutions
+                        </button>
+                    </template>
+                    <button type="button" @click="open = false; clearConflicts(); file = null;"
                             class="px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">
-                        Cancel
+                        Close
                     </button>
-                    <button type="submit" :disabled="submitting || !file"
+                    <button type="submit" :disabled="submitting || !file || (conflicts.length > 0 && Object.keys(resolutions).length !== conflicts.length)"
                             class="px-3 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <span x-show="!submitting">Confirm Import</span>
-                        <span x-show="submitting">Importing…</span>
+                        <span x-show="!submitting && !conflicts.length">Confirm Import</span>
+                        <span x-show="!submitting && conflicts.length">Apply Resolutions</span>
+                        <span x-show="submitting">Working…</span>
                     </button>
                 </div>
             </form>
@@ -239,10 +318,25 @@
             strategy: 'skip',
             dryRun: false,
             submitting: false,
-            conflictSummary: null,
-            showConflicts: false,
+            conflicts: [],
+            resolutions: {},
+            cachedPayload: null,
             errorMsg: '',
             toast: { visible: false, type: 'success', title: '', body: '' },
+
+            conflictKey(c) { return c.layup_name + ':' + c.layer_order; },
+            setResolution(c, action) { this.resolutions[this.conflictKey(c)] = action; },
+            applyAll(action) {
+                const next = {};
+                this.conflicts.forEach(c => { next[this.conflictKey(c)] = action; });
+                this.resolutions = next;
+            },
+            clearConflicts() {
+                this.conflicts = [];
+                this.resolutions = {};
+                this.cachedPayload = null;
+                this.errorMsg = '';
+            },
 
             handleDrop(e) {
                 this.dragOver = false;
@@ -257,6 +351,10 @@
                     this.errorMsg = 'File exceeds 10MB limit.';
                     return;
                 }
+                // Fresh file invalidates any cached payload / conflicts from an earlier attempt.
+                this.conflicts = [];
+                this.resolutions = {};
+                this.cachedPayload = null;
                 this.file = f;
             },
 
@@ -326,10 +424,12 @@
                 if (!this.file || this.submitting) return;
                 this.submitting = true;
                 this.errorMsg = '';
-                this.conflictSummary = null;
+                this.conflicts = [];
+                this.resolutions = {};
 
                 try {
                     const payload = await this.buildPayload();
+                    this.cachedPayload = payload;
                     const res = await fetch(config.importUrl, {
                         method: 'POST',
                         headers: {
@@ -350,8 +450,11 @@
 
                     if (res.status === 409 || (body && body.data && body.data.status === 'conflict')) {
                         const conflicts = (body.data && body.data.conflicts) || [];
-                        this.conflictSummary = { count: conflicts.length, items: conflicts.slice(0, 20) };
-                        this.showToast('warning', 'Conflicts detected', 'Review the conflicts below and adjust the strategy.');
+                        this.conflicts = conflicts;
+                        const res0 = {};
+                        conflicts.forEach(c => { res0[this.conflictKey(c)] = 'keep_existing'; });
+                        this.resolutions = res0;
+                        this.showToast('warning', 'Conflicts detected', 'Review each row and choose a resolution.');
                         return;
                     }
 
@@ -377,6 +480,72 @@
                 } catch (err) {
                     this.errorMsg = err.message || 'Unexpected error parsing the file.';
                     this.showToast('error', 'Import failed', this.errorMsg);
+                } finally {
+                    this.submitting = false;
+                }
+            },
+
+            async resubmitWithResolutions() {
+                if (this.submitting || !this.cachedPayload || !this.conflicts.length) return;
+                const missing = this.conflicts.find(c => !this.resolutions[this.conflictKey(c)]);
+                if (missing) {
+                    this.errorMsg = 'Please choose a resolution for every conflict.';
+                    return;
+                }
+
+                this.submitting = true;
+                this.errorMsg = '';
+
+                const resolutionsArr = this.conflicts.map(c => ({
+                    layup_name: c.layup_name,
+                    layer_order: c.layer_order,
+                    action: this.resolutions[this.conflictKey(c)],
+                }));
+
+                try {
+                    const res = await fetch(config.importUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': config.csrf,
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            strategy: 'manual',
+                            dry_run: this.dryRun,
+                            payload: this.cachedPayload,
+                            resolutions: resolutionsArr,
+                        }),
+                    });
+
+                    const body = await res.json().catch(() => ({}));
+
+                    if (!res.ok) {
+                        this.errorMsg = (body && (body.message || body.error)) || ('Import failed (HTTP '+ res.status +')');
+                        this.showToast('error', 'Resolution failed', this.errorMsg);
+                        return;
+                    }
+
+                    const summary = (body && body.data && body.data.summary) || {};
+                    const parts = [];
+                    if (summary.created_layups) parts.push(summary.created_layups + ' layups created');
+                    if (summary.updated_layups) parts.push(summary.updated_layups + ' updated');
+                    if (summary.created_layers) parts.push(summary.created_layers + ' layers added');
+                    const detail = parts.length ? parts.join(', ') : (body.message || 'Resolutions applied');
+
+                    this.showToast('success', this.dryRun ? 'Dry run complete' : 'Resolutions applied', detail);
+                    this.clearConflicts();
+
+                    if (!this.dryRun) {
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        this.open = false;
+                    }
+                } catch (err) {
+                    this.errorMsg = err.message || 'Unexpected error submitting resolutions.';
+                    this.showToast('error', 'Resolution failed', this.errorMsg);
                 } finally {
                     this.submitting = false;
                 }
