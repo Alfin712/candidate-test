@@ -47,7 +47,7 @@ class UserController extends Controller
         $data['password'] = Hash::make($data['password']);
         User::create($data);
 
-        return redirect()->route('users.index')->with('status', 'User created.');
+        return redirect()->route('users.index')->with('success', 'User created.');
     }
 
     public function edit(User $user)
@@ -72,7 +72,7 @@ class UserController extends Controller
 
         $user->update($data);
 
-        return redirect()->route('users.index')->with('status', 'User updated.');
+        return redirect()->route('users.index')->with('success', 'User updated.');
     }
 
     public function destroy(Request $request, User $user)
@@ -81,6 +81,6 @@ class UserController extends Controller
             return back()->withErrors(['user' => 'You cannot delete your own account.']);
         }
         $user->delete();
-        return redirect()->route('users.index')->with('status', 'User deleted.');
+        return redirect()->route('users.index')->with('success', 'User deleted.');
     }
 }

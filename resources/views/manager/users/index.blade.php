@@ -61,10 +61,12 @@
                         <td class="px-5 py-3 text-right">
                             <a href="{{ route('users.edit', $u) }}" class="text-xs text-gray-600 hover:text-emerald-700 px-2 py-1">Edit</a>
                             @if ($u->id !== auth()->id())
-                                <form method="POST" action="{{ route('users.destroy', $u) }}" class="inline" onsubmit="return confirm('Delete user?')">
-                                    @csrf @method('DELETE')
-                                    <button class="text-xs text-red-600 hover:text-red-800 px-2 py-1">Delete</button>
-                                </form>
+                                @include('manager.partials.delete-confirm', [
+                                    'action' => route('users.destroy', $u),
+                                    'title' => 'Delete user',
+                                    'message' => 'Delete user "'.$u->name.'"? They will lose access immediately.',
+                                    'triggerClass' => 'text-xs text-red-600 hover:text-red-800 px-2 py-1',
+                                ])
                             @endif
                         </td>
                     </tr>

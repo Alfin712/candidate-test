@@ -76,16 +76,38 @@
                                 <a href="{{ route('suppliers.show', $supplier) }}" class="text-xs text-gray-600 hover:text-emerald-700 px-2 py-1 rounded hover:bg-gray-100">Detail</a>
                                 @if (auth()->user()->canManage())
                                 <a href="{{ route('suppliers.edit', $supplier) }}" class="text-xs text-gray-600 hover:text-emerald-700 px-2 py-1 rounded hover:bg-gray-100">Edit</a>
-                                <form method="POST" action="{{ route('suppliers.destroy', $supplier) }}" onsubmit="return confirm('Delete supplier {{ $supplier->name }}?')">
-                                    @csrf @method('DELETE')
-                                    <button class="text-xs text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50">Delete</button>
-                                </form>
+                                @include('manager.partials.delete-confirm', [
+                                    'action' => route('suppliers.destroy', $supplier),
+                                    'title' => 'Delete supplier',
+                                    'message' => 'Delete supplier "'.$supplier->name.'"? This removes all its layups and cannot be undone.',
+                                ])
                                 @endif
                             </div>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="px-5 py-8 text-center text-gray-500">No suppliers found.</td></tr>
+                    <tr>
+                        <td colspan="7" class="px-5 py-12">
+                            <div class="flex flex-col items-center justify-center text-center max-w-sm mx-auto">
+                                <div class="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                    </svg>
+                                </div>
+                                <h3 class="text-sm font-semibold text-gray-900">No suppliers found</h3>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    {{ $search || $status ? 'Try adjusting your search or filters.' : 'Get started by registering your first CLT supplier.' }}
+                                </p>
+                                @if (auth()->user()->canManage() && !$search && !$status)
+                                    <a href="{{ route('suppliers.create') }}"
+                                       class="mt-4 inline-flex items-center gap-2 px-3 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md hover:bg-emerald-700">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                        Create first supplier
+                                    </a>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
                 @endforelse
             </tbody>
         </table>

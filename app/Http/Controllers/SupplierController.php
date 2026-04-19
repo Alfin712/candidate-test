@@ -38,7 +38,7 @@ class SupplierController extends Controller
     {
         $data = $this->validateData($request);
         $supplier = Supplier::create($data);
-        return redirect()->route('suppliers.show', $supplier)->with('status', 'Supplier created.');
+        return redirect()->route('suppliers.show', $supplier)->with('success', 'Supplier created.');
     }
 
     public function show(Supplier $supplier)
@@ -57,13 +57,13 @@ class SupplierController extends Controller
     {
         $data = $this->validateData($request, $supplier->id);
         $supplier->update($data);
-        return redirect()->route('suppliers.show', $supplier)->with('status', 'Supplier updated.');
+        return redirect()->route('suppliers.show', $supplier)->with('success', 'Supplier updated.');
     }
 
     public function destroy(Supplier $supplier)
     {
         $supplier->delete();
-        return redirect()->route('suppliers.index')->with('status', 'Supplier deleted.');
+        return redirect()->route('suppliers.index')->with('success', 'Supplier deleted.');
     }
 
     protected function validateData(Request $request, ?int $ignoreId = null): array

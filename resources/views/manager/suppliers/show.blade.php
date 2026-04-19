@@ -3,9 +3,10 @@
 
 @section('content')
 @php($canManage = auth()->user()->canManage())
-<div class="mb-4 text-sm text-gray-500">
-    <a href="{{ route('suppliers.index') }}" class="hover:text-emerald-700">Suppliers</a> &rsaquo; {{ $supplier->name }}
-</div>
+@include('manager.partials.breadcrumb', ['items' => [
+    ['label' => 'Suppliers', 'url' => route('suppliers.index')],
+    ['label' => $supplier->name],
+]])
 
 <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
     <div class="flex items-start justify-between flex-wrap gap-4">
@@ -27,10 +28,13 @@
         @if ($canManage)
         <div class="flex gap-2">
             <a href="{{ route('suppliers.edit', $supplier) }}" class="px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">Edit</a>
-            <form method="POST" action="{{ route('suppliers.destroy', $supplier) }}" onsubmit="return confirm('Delete this supplier?')">
-                @csrf @method('DELETE')
-                <button class="px-3 py-2 bg-white border border-red-300 text-red-700 text-sm font-medium rounded-md hover:bg-red-50">Delete</button>
-            </form>
+            @include('manager.partials.delete-confirm', [
+                'action' => route('suppliers.destroy', $supplier),
+                'title' => 'Delete supplier',
+                'message' => 'Are you sure you want to delete "'.$supplier->name.'"? This will remove all its layups and cannot be undone.',
+                'triggerClass' => 'px-3 py-2 bg-white border border-red-300 text-red-700 text-sm font-medium rounded-md hover:bg-red-50',
+                'triggerLabel' => 'Delete',
+            ])
         </div>
         @endif
     </div>

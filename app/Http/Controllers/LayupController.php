@@ -46,7 +46,7 @@ class LayupController extends Controller
     {
         $data = $this->validateData($request);
         $layup = Layup::create($data);
-        return redirect()->route('layups.show', $layup)->with('status', 'Layup created.');
+        return redirect()->route('layups.show', $layup)->with('success', 'Layup created.');
     }
 
     public function show(Layup $layup)
@@ -66,14 +66,14 @@ class LayupController extends Controller
     {
         $data = $this->validateData($request, $layup);
         $layup->update($data);
-        return redirect()->route('layups.show', $layup)->with('status', 'Layup updated.');
+        return redirect()->route('layups.show', $layup)->with('success', 'Layup updated.');
     }
 
     public function destroy(Layup $layup)
     {
         $supplierId = $layup->supplier_id;
         $layup->delete();
-        return redirect()->route('suppliers.show', $supplierId)->with('status', 'Layup deleted.');
+        return redirect()->route('suppliers.show', $supplierId)->with('success', 'Layup deleted.');
     }
 
     protected function validateData(Request $request, ?Layup $layup = null): array

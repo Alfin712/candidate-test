@@ -2,17 +2,25 @@
 @section('title', 'New User')
 
 @section('content')
-<div class="mb-4 text-sm text-gray-500">
-    <a href="{{ route('users.index') }}" class="hover:text-emerald-700">Users</a> &rsaquo; New
-</div>
+@include('manager.partials.breadcrumb', ['items' => [
+    ['label' => 'Users', 'url' => route('users.index')],
+    ['label' => 'New'],
+]])
 <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6 max-w-3xl">
     <h1 class="text-xl font-semibold text-gray-900 mb-4">Create User</h1>
-    <form method="POST" action="{{ route('users.store') }}">
+    <form method="POST" action="{{ route('users.store') }}" x-data="{ submitting: false }" @submit="submitting = true">
         @csrf
         @include('manager.users._form')
         <div class="mt-6 flex gap-2">
-            <button class="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md hover:bg-emerald-700">Create User</button>
-            <a href="{{ route('users.index') }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">Cancel</a>
+            <button type="submit" :disabled="submitting"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed min-h-[40px]">
+                <svg x-show="submitting" x-cloak class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+                <span x-text="submitting ? 'Saving...' : 'Create User'">Create User</span>
+            </button>
+            <a href="{{ route('users.index') }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 min-h-[40px] inline-flex items-center">Cancel</a>
         </div>
     </form>
 </div>

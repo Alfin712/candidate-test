@@ -7,13 +7,13 @@
 @endphp
 
 @section('content')
-<div class="mb-4 text-sm text-gray-500">
-    <a href="{{ route('dashboard') }}" class="hover:text-emerald-700">Home</a> &rsaquo;
-    <a href="{{ route('suppliers.index') }}" class="hover:text-emerald-700">Suppliers</a> &rsaquo;
-    <a href="{{ route('suppliers.show', $layup->supplier_id) }}" class="hover:text-emerald-700">{{ $layup->supplier?->name }}</a> &rsaquo;
-    <a href="{{ route('layups.index') }}" class="hover:text-emerald-700">Layups</a> &rsaquo;
-    {{ $layup->specification_code ?? $layup->name }}
-</div>
+@include('manager.partials.breadcrumb', ['items' => [
+    ['label' => 'Home', 'url' => route('dashboard')],
+    ['label' => 'Suppliers', 'url' => route('suppliers.index')],
+    ['label' => $layup->supplier?->name ?? '—', 'url' => route('suppliers.show', $layup->supplier_id)],
+    ['label' => 'Layups', 'url' => route('layups.index')],
+    ['label' => $layup->specification_code ?? $layup->name],
+]])
 
 <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
     <div class="flex items-start justify-between flex-wrap gap-4">
@@ -27,10 +27,13 @@
         @if (auth()->user()->canManage())
         <div class="flex gap-2">
             <a href="{{ route('layups.edit', $layup) }}" class="px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">Edit</a>
-            <form method="POST" action="{{ route('layups.destroy', $layup) }}" onsubmit="return confirm('Delete layup?')">
-                @csrf @method('DELETE')
-                <button class="px-3 py-2 bg-white border border-red-300 text-red-700 text-sm font-medium rounded-md hover:bg-red-50">Delete</button>
-            </form>
+            @include('manager.partials.delete-confirm', [
+                'action' => route('layups.destroy', $layup),
+                'title' => 'Delete layup',
+                'message' => 'Are you sure you want to delete "'.$layup->name.'"? Its layers will be removed. This cannot be undone.',
+                'triggerClass' => 'px-3 py-2 bg-white border border-red-300 text-red-700 text-sm font-medium rounded-md hover:bg-red-50',
+                'triggerLabel' => 'Delete',
+            ])
         </div>
         @endif
     </div>

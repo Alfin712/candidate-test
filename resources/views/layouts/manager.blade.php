@@ -15,25 +15,21 @@
     <div class="min-h-screen flex flex-col">
         @include('manager.partials.navbar')
 
-        @if (session('status'))
-            <div class="bg-emerald-50 border-b border-emerald-200 text-emerald-800 px-4 py-2 text-sm">
-                <div class="max-w-7xl mx-auto">{{ session('status') }}</div>
-            </div>
-        @endif
-
-        @if ($errors->any())
-            <div class="bg-red-50 border-b border-red-200 text-red-800 px-4 py-2 text-sm">
-                <div class="max-w-7xl mx-auto">
-                    <ul class="list-disc list-inside">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-        @endif
-
         <main class="flex-1">
+            @include('manager.partials.toast')
+
+            @if ($errors->any())
+                <div class="bg-red-50 border-b border-red-200 text-red-800 px-4 py-2 text-sm">
+                    <div class="max-w-7xl mx-auto">
+                        <ul class="list-disc list-inside">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            @endif
+
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 @yield('content')
             </div>
