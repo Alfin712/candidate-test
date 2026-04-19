@@ -14,16 +14,16 @@ class LayerPolicy
 
     public function create(?User $user): bool
     {
-        return $user !== null;
+        return $user !== null && $user->canManage();
     }
 
     public function update(?User $user, Layer $layer): bool
     {
-        return $user !== null;
+        return $user !== null && $user->canManage();
     }
 
     public function delete(?User $user, Layer $layer): bool
     {
-        return $user !== null;
+        return $user !== null && $user->canManage();
     }
 }

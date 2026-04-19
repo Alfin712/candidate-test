@@ -19,26 +19,26 @@ class SupplierPolicy
 
     public function create(?User $user): bool
     {
-        return $user !== null;
+        return $user !== null && $user->canManage();
     }
 
     public function update(?User $user, Supplier $supplier): bool
     {
-        return $user !== null;
+        return $user !== null && $user->canManage();
     }
 
     public function delete(?User $user, Supplier $supplier): bool
     {
-        return $user !== null;
+        return $user !== null && $user->canManage();
     }
 
     public function import(?User $user, Supplier $supplier): bool
     {
-        return $user !== null;
+        return $user !== null && $user->canManage();
     }
 
     public function export(?User $user, Supplier $supplier): bool
     {
-        return true;
+        return $user !== null;
     }
 }

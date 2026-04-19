@@ -14,16 +14,16 @@ class LayupPolicy
 
     public function create(?User $user): bool
     {
-        return $user !== null;
+        return $user !== null && $user->canManage();
     }
 
     public function update(?User $user, Layup $layup): bool
     {
-        return $user !== null;
+        return $user !== null && $user->canManage();
     }
 
     public function delete(?User $user, Layup $layup): bool
     {
-        return $user !== null;
+        return $user !== null && $user->canManage();
     }
 }
