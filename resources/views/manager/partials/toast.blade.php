@@ -1,5 +1,12 @@
 @php
-    $toastSuccess = session('success') ?? session('status');
+    $sentinelMap = [
+        'profile-updated'        => 'Profile updated.',
+        'password-updated'       => 'Password updated.',
+        'verification-link-sent' => 'Verification link sent.',
+    ];
+    $rawStatus = session('status');
+    $statusMsg = $rawStatus ? ($sentinelMap[$rawStatus] ?? null) : null;
+    $toastSuccess = session('success') ?? $statusMsg;
     $toastError = session('error');
 @endphp
 
