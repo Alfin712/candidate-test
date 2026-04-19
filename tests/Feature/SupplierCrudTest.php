@@ -3,12 +3,22 @@
 namespace Tests\Feature;
 
 use App\Models\Supplier;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class SupplierCrudTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected User $actor;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->actor = User::factory()->create(['role' => User::ROLE_STAFF]);
+        $this->actingAs($this->actor);
+    }
 
     public function test_index_returns_paginated_suppliers(): void
     {

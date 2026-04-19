@@ -5,12 +5,22 @@ namespace Tests\Feature;
 use App\Models\Layer;
 use App\Models\Layup;
 use App\Models\Supplier;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class SupplierTransferTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected User $actor;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->actor = User::factory()->create(['role' => User::ROLE_STAFF]);
+        $this->actingAs($this->actor);
+    }
 
     public function test_it_exports_supplier_with_nested_layups_and_layers(): void
     {

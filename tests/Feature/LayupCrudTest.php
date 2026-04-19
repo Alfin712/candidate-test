@@ -4,12 +4,22 @@ namespace Tests\Feature;
 
 use App\Models\Layup;
 use App\Models\Supplier;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class LayupCrudTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected User $actor;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->actor = User::factory()->create(['role' => User::ROLE_STAFF]);
+        $this->actingAs($this->actor);
+    }
 
     public function test_store_creates_layup_under_supplier(): void
     {
