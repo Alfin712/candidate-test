@@ -188,7 +188,15 @@
                             </div>
                             <div class="text-xs text-amber-800/80 mt-0.5">Red fields differ between existing and imported data.</div>
                         </div>
-                        <div class="flex gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <div class="inline-flex rounded-md border border-amber-300 bg-white overflow-hidden text-xs">
+                                <button type="button" @click="stepMode = false"
+                                        :class="!stepMode ? 'bg-amber-600 text-white' : 'text-amber-800 hover:bg-amber-50'"
+                                        class="px-2.5 py-1.5 font-medium">All</button>
+                                <button type="button" @click="stepMode = true; currentIdx = 0"
+                                        :class="stepMode ? 'bg-amber-600 text-white' : 'text-amber-800 hover:bg-amber-50'"
+                                        class="px-2.5 py-1.5 font-medium border-l border-amber-300">Step</button>
+                            </div>
                             <button type="button" @click="applyAll('keep_existing')"
                                 class="px-2.5 py-1.5 text-xs font-medium rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
                                 Apply all: Keep Existing
@@ -200,9 +208,31 @@
                         </div>
                     </header>
 
+                    {{-- Step-mode nav bar --}}
+                    <div x-show="stepMode" x-cloak
+                         class="px-4 py-2 border-b border-amber-200 bg-amber-100/50 flex items-center justify-between text-xs">
+                        <button type="button" @click="stepPrev()" :disabled="currentIdx === 0"
+                                class="px-2.5 py-1 rounded-md bg-white border border-amber-300 text-amber-800 hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed">
+                            &larr; Prev
+                        </button>
+                        <div class="flex items-center gap-3">
+                            <span class="font-semibold text-amber-900">
+                                <span x-text="currentIdx + 1"></span> of <span x-text="conflicts.length"></span>
+                            </span>
+                            <button type="button" @click="jumpNextUnresolved()"
+                                    class="px-2 py-0.5 rounded bg-white border border-amber-300 text-amber-800 hover:bg-amber-50">
+                                Next unresolved
+                            </button>
+                        </div>
+                        <button type="button" @click="stepNext()" :disabled="currentIdx >= conflicts.length - 1"
+                                class="px-2.5 py-1 rounded-md bg-white border border-amber-300 text-amber-800 hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed">
+                            Next &rarr;
+                        </button>
+                    </div>
+
                     <ul class="divide-y divide-amber-200">
-                        <template x-for="c in conflicts" :key="c.layup_name + ':' + c.layer_order">
-                            <li class="p-4">
+                        <template x-for="(c, idx) in conflicts" :key="c.layup_name + ':' + c.layer_order">
+                            <li class="p-4" x-show="!stepMode || idx === currentIdx">
                                 <div class="text-sm font-medium text-gray-900 mb-2">
                                     <span x-text="c.layup_name"></span>
                                     <span class="text-gray-500"> — Layer </span>
@@ -323,6 +353,8 @@
             cachedPayload: null,
             errorMsg: '',
             toast: { visible: false, type: 'success', title: '', body: '' },
+            stepMode: false,
+            currentIdx: 0,
 
             conflictKey(c) { return c.layup_name + ':' + c.layer_order; },
             setResolution(c, action) { this.resolutions[this.conflictKey(c)] = action; },
@@ -331,11 +363,23 @@
                 this.conflicts.forEach(c => { next[this.conflictKey(c)] = action; });
                 this.resolutions = next;
             },
+            stepPrev() { if (this.currentIdx > 0) this.currentIdx--; },
+            stepNext() { if (this.currentIdx < this.conflicts.length - 1) this.currentIdx++; },
+            jumpNextUnresolved() {
+                for (let i = this.currentIdx + 1; i < this.conflicts.length; i++) {
+                    if (!this.resolutions[this.conflictKey(this.conflicts[i])]) { this.currentIdx = i; return; }
+                }
+                for (let i = 0; i < this.currentIdx; i++) {
+                    if (!this.resolutions[this.conflictKey(this.conflicts[i])]) { this.currentIdx = i; return; }
+                }
+            },
             clearConflicts() {
                 this.conflicts = [];
                 this.resolutions = {};
                 this.cachedPayload = null;
                 this.errorMsg = '';
+                this.stepMode = false;
+                this.currentIdx = 0;
             },
 
             handleDrop(e) {
@@ -451,6 +495,7 @@
                     if (res.status === 409 || (body && body.data && body.data.status === 'conflict')) {
                         const conflicts = (body.data && body.data.conflicts) || [];
                         this.conflicts = conflicts;
+                        this.currentIdx = 0;
                         const res0 = {};
                         conflicts.forEach(c => { res0[this.conflictKey(c)] = 'keep_existing'; });
                         this.resolutions = res0;
