@@ -20,13 +20,13 @@
         <form method="GET" class="flex gap-2 flex-wrap">
             <input type="text" name="q" value="{{ $search }}" placeholder="Search layups..."
                    class="flex-1 min-w-[220px] border border-gray-300 rounded-md text-sm px-3 py-2 focus:ring-emerald-500 focus:border-emerald-500">
-            <select name="supplier_id" class="border border-gray-300 rounded-md text-sm px-3 py-2">
+            <select name="supplier_id" class="border border-gray-300 rounded-md text-sm pl-3 pr-8 py-2 bg-white focus:ring-emerald-500 focus:border-emerald-500">
                 <option value="">All Suppliers</option>
                 @foreach ($suppliers as $s)
                     <option value="{{ $s->id }}" @selected(request('supplier_id') == $s->id)>{{ $s->name }}</option>
                 @endforeach
             </select>
-            <select name="status" class="border border-gray-300 rounded-md text-sm px-3 py-2">
+            <select name="status" class="border border-gray-300 rounded-md text-sm pl-3 pr-8 py-2 bg-white focus:ring-emerald-500 focus:border-emerald-500">
                 <option value="">All Status</option>
                 @foreach (['Active', 'Draft', 'Archived'] as $s)
                     <option value="{{ $s }}" @selected($status === $s)>{{ $s }}</option>
