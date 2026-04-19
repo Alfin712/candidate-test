@@ -1,9 +1,13 @@
 # Setup & Run Guide
 
+> For submission overview + live demo URL + credentials, see
+> [SUBMISSION.md](./SUBMISSION.md).
+
 ## Requirements
 - PHP 8.2+
 - MySQL 8.x (running on localhost:3306)
 - Composer
+- Node.js 20+ (for the Vite asset build)
 
 ## Steps
 
@@ -15,6 +19,7 @@ cp .env.example .env
 ### 2. Install dependencies
 ```bash
 composer install
+npm ci
 ```
 
 ### 3. Generate app key
@@ -27,12 +32,23 @@ php artisan key:generate
 php artisan migrate
 ```
 
-### 5. Seed sample data (optional)
+### 5. Seed sample data
 ```bash
 php artisan db:seed
 ```
 
-### 6. Run tests
+This creates three accounts — `test@example.com` (admin),
+`staff@example.com` (staff), `viewer@example.com` (viewer) — all
+with password `password`. Public registration is disabled; provision
+additional accounts from the Users page as an admin.
+
+### 6. Build frontend assets
+```bash
+npm run build   # production
+# or: npm run dev    # hot reload during development
+```
+
+### 7. Run tests
 ```bash
 php artisan test
 # or
