@@ -61,7 +61,9 @@
         <div class="space-y-2">
             <a href="{{ route('suppliers.create') }}" class="block text-sm text-emerald-700 hover:underline">+ New Supplier</a>
             <a href="{{ route('layups.create') }}" class="block text-sm text-emerald-700 hover:underline">+ New Layup</a>
-            <a href="{{ route('suppliers.index') }}" class="block text-sm text-emerald-700 hover:underline">Import Data</a>
+            <a href="{{ route('suppliers.index') }}"
+               title="Open a supplier, then use Export / Import on its detail page"
+               class="block text-sm text-emerald-700 hover:underline">Browse Suppliers &rarr; Import</a>
         </div>
     </div>
 </div>
